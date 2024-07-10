@@ -2,7 +2,7 @@ import datetime
 import sys
 
 import pyttsx3
-import win32com.client as win
+
 import webbrowser
 import AppOpener
 from datetime import datetime
@@ -11,6 +11,26 @@ import os
 from groq import Groq
 import threading
 from queue import Queue
+
+
+def groq_request(text):
+    client = Groq(
+        api_key=os.environ.get("API_KEY"),
+    )
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": text,
+            }
+        ],
+        model="llama3-8b-8192",
+    )
+    response = chat_completion.choices[0].message.content
+
+    return response
+
 
 class VoiceAssistant:
     def __init__(self):
@@ -23,34 +43,12 @@ class VoiceAssistant:
 
     def say(self, text):
         threading.Thread(target=self._speak, args=(text,)).start()
-    def _speak(self,text):
-        self.engine.setProperty('voice',r'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0')
+
+    def _speak(self, text):
+        self.engine.setProperty('voice',
+                                r'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0')
         self.engine.say(text)
         self.engine.runAndWait()
-
-
-
-    def groq_request(self, text):
-        client = Groq(
-            api_key=os.environ.get("API_KEY"),
-        )
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": text,
-                }
-            ],
-            model="llama3-8b-8192",
-        )
-        response = chat_completion.choices[0].message.content
-
-        with open(f"logs\\{text}.txt", 'w') as fpp:
-            fpp.write(response)
-
-        return response
-
 
     def command(self, mic_text):
         print(f"user: {mic_text.lower()}")
@@ -77,11 +75,13 @@ class VoiceAssistant:
             return f"The time is {time.strftime("%H")} hours {time.strftime("%M")} minutes"
 
         elif any(phrase.lower() == mic_text for phrase in self.phrases):
-            self.say("Bye! It was nice chatting with you. Feel free to come back anytime with more questions or just to say hi!")
+            self.say(
+                "Bye! It was nice chatting with you. Feel free to come back anytime with more questions or just to "
+                "say hi!")
             sys.exit()
 
         else:
-            response = self.groq_request(mic_text)
+            response = groq_request(mic_text)
             print(response)
             self.say(response)
             return response
