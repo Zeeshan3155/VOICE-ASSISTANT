@@ -1,8 +1,5 @@
 import datetime
-import sys
-
 import pyttsx3
-
 import webbrowser
 import AppOpener
 from datetime import datetime
@@ -38,56 +35,57 @@ class VoiceAssistant:
             file_content = json.load(fp)
             self.websites = file_content['websites']
             self.phrases = file_content['phrases']
-            self.response_queue = Queue()
-            self.engine = pyttsx3.init()
+        self.response_queue = Queue()
+        self.engine = pyttsx3.init()
+        self.lock = threading.Lock()
+
+    def __del__(self):
+        self.engine.stop()
 
     def say(self, text):
         threading.Thread(target=self._speak, args=(text,)).start()
 
     def _speak(self, text):
-        self.engine.setProperty('voice',
-                                r'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0')
-        self.engine.say(text)
-        self.engine.runAndWait()
+        with self.lock:
+            try:
+                self.engine.say(text)
+                self.engine.runAndWait()
+            except Exception as e:
+                print(e)
 
     def command(self, mic_text):
-        print(f"user: {mic_text.lower()}")
+        try:
+            if mic_text.lower() in list(self.websites.keys()):
+                webbrowser.open(self.websites[mic_text.lower()])
+                self.say(f"Opening {self.websites[mic_text.lower()]}")
+                return f"Opening {self.websites[mic_text.lower()]}"
 
-        if mic_text.lower() in list(self.websites.keys()):
-            print(f"response: Opening website {mic_text}")
-            webbrowser.open(self.websites[mic_text.lower()])
-            return f"Opening {self.websites[mic_text.lower()]}"
+            elif "open app" in mic_text.lower():
+                AppOpener.open(mic_text.lower()[9:])
+                self.say(f"Opening app {mic_text.lower()[9:]}")
+                return f"Opening app {mic_text.lower()[9:]}"
 
-        elif "open app" in mic_text.lower():
-            print(f"response: Opening app {mic_text[9:]}")
-            AppOpener.open(mic_text.lower()[9:])
-            return f"Opening app {mic_text.lower()[9:]}"
+            elif "close app" in mic_text.lower():
+                AppOpener.close(mic_text.lower()[10:])
+                self.say(f"Closing app {mic_text.lower()[10:]}")
+                return f"Closing app {mic_text.lower()[10:]}"
 
-        elif "close app" in mic_text.lower():
-            print(f"response: Closing app {mic_text[9:]}")
-            AppOpener.close(mic_text.lower()[9:])
-            return f"Closing app {mic_text.lower()[9:]}"
+            elif "time" in mic_text.lower():
+                time = datetime.now().strftime("The time is %H hours %M minutes")
+                self.say(time)
+                return time
 
-        elif "time" in mic_text.lower():
-            time = datetime.now()
-            print(f"The time is {time.strftime("%H")} hours {time.strftime("%M")} minutes")
-            self.say(f"The time is {time.strftime("%H")} hours {time.strftime("%M")} minutes")
-            return f"The time is {time.strftime("%H")} hours {time.strftime("%M")} minutes"
+            elif any(phrase.lower() == mic_text for phrase in self.phrases):
+                bye_text = "Bye! It was nice chatting with you."
+                self.say(bye_text)
+                return bye_text
 
-        elif any(phrase.lower() == mic_text for phrase in self.phrases):
-            self.say(
-                "Bye! It was nice chatting with you. Feel free to come back anytime with more questions or just to "
-                "say hi!")
-            sys.exit()
+            else:
+                response = groq_request(mic_text)
+                self.say(response)
+                return response
 
-        else:
-            response = groq_request(mic_text)
-            print(response)
-            self.say(response)
-            return response
-
-
-'''if __name__ == '__main__':
-    print('pycharm')
-    voiceassistant = VoiceAssistant()
-    voiceassistant.listen()'''
+        except Exception as e:
+            error_msg = f"Error processing command: {e}"
+            self.say(error_msg)
+            return error_msg
