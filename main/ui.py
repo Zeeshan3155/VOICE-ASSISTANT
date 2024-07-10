@@ -45,6 +45,7 @@ Screen:
                 elevation_normal: 8
 '''
 
+
 class ChatBotApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
@@ -67,9 +68,10 @@ class ChatBotApp(MDApp):
                 Clock.schedule_once(lambda dt: self.add_message("User", user_input))
                 Clock.schedule_once(lambda dt: self.add_message("Bot", response))
         except Exception as e:
-            Clock.schedule_once(lambda dt: self.add_message("Bot", f"Error: {e}"))
+            Clock.schedule_once(lambda dt, error_msg=f"Error: {e}": self.add_message("Bot", error_msg))
 
-    def listen(self):
+    @staticmethod
+    def listen():
         recognizer = sr.Recognizer()
         with sr.Microphone() as source:
             print("Listening...")
@@ -114,16 +116,6 @@ class ChatBotApp(MDApp):
             padding=(dp(8), dp(4)),  # Adjust padding as needed
         )
 
-        sender_label = Label(
-            text=sender,
-            size_hint=(None, None),
-            height=self.theme_cls.font_styles['Body1'][1],
-            color=text_color,
-            halign='left',
-            text_size=(self.root.width * 0.9 - dp(64), None)  # Adjust text width for remaining space
-        )
-
-        # Add sender label to sender layout
         sender_layout.add_widget(logo)
         #sender_layout.add_widget(sender_label)
 
@@ -160,16 +152,18 @@ class ChatBotApp(MDApp):
 
     def animate_button(self):
         mic_button = self.root.ids.get('mic_button')
-        if (mic_button):
-            self.button_animation = Animation(size=(dp(80), dp(80)), duration=0.5) + Animation(size=(dp(70), dp(70)), duration=0.5)
+        if mic_button:
+            self.button_animation = Animation(size=(dp(80), dp(80)), duration=0.5) + Animation(size=(dp(70), dp(70)),
+                                                                                               duration=0.5)
             self.button_animation.repeat = True
             self.button_animation.start(mic_button)
 
     def stop_animation(self):
         mic_button = self.root.ids.get('mic_button')
-        if (mic_button and hasattr(self, 'button_animation')):
+        if mic_button and hasattr(self, 'button_animation'):
             self.button_animation.stop(mic_button)
             mic_button.size = (dp(70), dp(70))
+
 
 if __name__ == "__main__":
     ChatBotApp().run()
