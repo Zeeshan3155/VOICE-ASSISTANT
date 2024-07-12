@@ -14,8 +14,11 @@ This is a simple yet powerful voice assistant application built using Python, Ki
 * **Interactive Chatbot Interface:** Provides a visually appealing and interactive interface for user interaction.
 ## 📸Screenshots
 ### UI
+![va1](https://github.com/user-attachments/assets/b479568d-cf5e-4fbe-a312-5263ebaadce9)
 
 ### Working
+https://github.com/user-attachments/assets/052901ae-3799-433f-b5d6-606a52c46bb9
+
 
 ## Tools and Libraries used
 * Python 3.12
