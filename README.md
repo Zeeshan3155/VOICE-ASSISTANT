@@ -17,8 +17,7 @@ This is a simple yet powerful voice assistant application built using Python, Ki
 ![va1](https://github.com/user-attachments/assets/b479568d-cf5e-4fbe-a312-5263ebaadce9)
 
 ### Working
-https://github.com/user-attachments/assets/052901ae-3799-433f-b5d6-606a52c46bb9
-
+https://github.com/user-attachments/assets/954fe032-6216-40ac-b93b-d6b922cdec65
 
 ## Tools and Libraries used
 * Python 3.12
