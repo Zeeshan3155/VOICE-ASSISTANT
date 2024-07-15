@@ -48,6 +48,7 @@ Screen:
 
 class ChatBotApp(MDApp):
     def build(self):
+        self.title = "Voice Assistant"
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Aliceblue"
         self.theme_cls.accent_palette = "Yellow"
